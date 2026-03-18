@@ -4,7 +4,7 @@
 ![scikit-learn](https://img.shields.io/badge/scikit--learn-F7931E?logo=scikit-learn&logoColor=white)
 ![LightGBM](https://img.shields.io/badge/LightGBM-2E86AB?logo=lightgbm&logoColor=white)
 
-End-to-end credit risk engine built on Lending Club loan data. Estimates the Expected Loss of a loan portfolio using the industry-standard formula:
+This is an end-to-end credit risk pipeline built on Lending Club loan data. Estimates the Expected Loss of a loan portfolio using the standard formula, with LGD (Loss Given Default) as a percentage:
 
 $$
 EL = PD \times (LGD/100) \times EAD
@@ -30,11 +30,9 @@ The project is structured in 4 phases:
 | Random Forest       | 0.73           |
 | Decision Tree       | 0.55           |
 
-> LightGBM is the best model here. Appart from having the highest ROC-AUC, it is also the fastest and most complete model.
+> LightGBM is the best model here. Appart from having the highest ROC-AUC, it is also the fastest and most complete model. I have set the threshold to 0.10 to maximize Recall, because in credit risk, missing a defaulter is more costly, in fact, it is worse to lose €100,000 from one client than $10,000 from 10 clients each.
 
-> I have set the threshold to 0.10 to maximize Recall, because in credit risk, missing a defaulter is more costly, in fact, it is worse to lose €100,000 from one client than $10,000 from 10 clients each.
-
-### LGD: Regression (MAE)
+### LGD: Regression (MAE & RMSE)
 
 | Model                   | MAE            | RMSE           |
 | ----------------------- | -------------- | -------------- |
@@ -56,27 +54,30 @@ The project is structured in 4 phases:
 > A 4.49% expected loss is within acceptable range for consumer credit, offset by Lending Club's interest rates. Recommended to provision this amount prior to portfolio acquisition.
 
 ## Dataset
+- Source (original): Lending Club Loan Data (Kaggle)
+- Availability: The dataset is not included in this repository due to size.
 
-- **Source**: [Lending Club Loan Data — Kaggle](https://www.kaggle.com/datasets/db0boy/lending-club-loan-data-cleared/data)
-- **Total records**: 2.1M
-- **Features**: 45 original, 165 after cleaning and encoding
-- **Class imbalance**: ~13% defaulters
+## How to obtain the data
+1. Download the dataset from Kaggle:
+https://www.kaggle.com/datasets/db0boy/lending-club-loan-data-cleared/data
+2. Place the original files in your working directory.
+3. The dataset already includes: Run the preprocessing pipeline to generate:
+```bash
+cleaned_data.csv
+X.csv
+target.csv
+```
 
 ## File Structure
-
 ```
 .
-├── Data/
-│   ├── cleaned_data.csv
-|   ├── X.csv
-│   └── target.csv
 ├── Models/
 │   ├── best_clf_model.pkl
 │   └── best_reg_model.pkl
 ├── Visualizations/
+├── .gitignore
 ├── EDA.ipynb
 ├── LICENSE
-├── .gitignore
 ├── main.py
 ├── modeling.py
 ├── README.md
