@@ -28,7 +28,19 @@ The project is structured in 4 phases:
 | Random Forest       | 0.73           |
 | Decision Tree       | 0.55           |
 
-> LightGBM is the best model here. Appart from having the highest ROC-AUC, it is also the fastest and most complete model. I have set the threshold to 0.10 to maximize Recall, because in credit risk, missing a defaulter is more costly, in fact, it is worse to lose €100,000 from one client than $10,000 from 10 clients each.
+> LightGBM is the best model here. Appart from having the highest ROC-AUC, it is also the fastest and most complete model.
+
+### Business Decision: Threshold Selection
+
+The threshold is set at 0.10 to prioritize risk reduction.
+
+- Recall = 0.95 → 95% of defaulters are identified  
+- Precision = 0.54 → moderate false positives  
+
+In credit risk, missing a defaulter (FN) is far more costly than rejecting a good client (FP). In fact, it is worse to lose €100,000 from one client than $10,000 from 10 clients each
+This threshold minimizes costly defaults, aligning with a **conservative risk strategy**.
+
+> Precision-Recall Trade-off: lower approvals, higher portfolio quality.
 
 ### LGD: Regression (Focus on minimizing MAE & RMSE)
 
