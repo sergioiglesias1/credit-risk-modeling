@@ -1,19 +1,6 @@
-import joblib
 import numpy as np
 import pandas as pd
-from sklearn.base import BaseEstimator
 from sklearn.metrics import precision_recall_fscore_support, roc_curve
-
-class ModelSaver:
-    def save_model(self, model: BaseEstimator, path: str) -> str | None:
-        try:
-            joblib.dump(model, path)
-            print(f"\nModel saved successfully at: {path}\n")
-            return path
-        except Exception as e:
-            print(f"[Error Saving Model] {e}")
-            return None
-
 
 class ThresholdAnalyzer:
     def __init__(self, thresholds=None):
