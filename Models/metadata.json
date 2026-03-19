@@ -2,8 +2,7 @@
   "pd_model": "LightGBM",
   "lgd_model": "Random Forest",
   "trained_on": "2025-03",
-  "dataset": "Lending Club Loan Data (Kaggle)",
-  "sample_frac": 0.2,
+  "dataset": "Lending Club Loan Data",
   "pd_cv_auc": 0.7545,
   "pd_best_params": {
     "learning_rate": 0.1,
