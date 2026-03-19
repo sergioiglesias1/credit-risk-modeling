@@ -4,11 +4,9 @@
 ![scikit-learn](https://img.shields.io/badge/scikit--learn-F7931E?logo=scikit-learn&logoColor=white)
 ![LightGBM](https://img.shields.io/badge/LightGBM-2E86AB?logo=lightgbm&logoColor=white)
 
-This is an end-to-end credit risk pipeline built on Lending Club loan data. Estimates the Expected Loss of a loan portfolio using the standard formula, with LGD (Loss Given Default) as a percentage:
+This is a compehensive credit risk pipeline built on Lending Club loan data. Estimates the Expected Loss of a loan portfolio using the standard formula, with LGD (Loss Given Default) as a percentage:
 
-$$
-EL = PD \times (LGD/100) \times EAD
-$$
+> `EL = PD × (LGD / 100) × EAD`
 
 ## Project Overview
 
@@ -21,7 +19,7 @@ The project is structured in 4 phases:
 
 ## Estimated Models
 
-### PD: Classification (ROC-AUC)
+### PD: Classification (Focus on maximizing ROC-AUC)
 
 | Model               | ROC-AUC        |
 | ------------------- | -------------- |
@@ -32,7 +30,7 @@ The project is structured in 4 phases:
 
 > LightGBM is the best model here. Appart from having the highest ROC-AUC, it is also the fastest and most complete model. I have set the threshold to 0.10 to maximize Recall, because in credit risk, missing a defaulter is more costly, in fact, it is worse to lose €100,000 from one client than $10,000 from 10 clients each.
 
-### LGD: Regression (MAE & RMSE)
+### LGD: Regression (Focus on minimizing MAE & RMSE)
 
 | Model                   | MAE            | RMSE           |
 | ----------------------- | -------------- | -------------- |
@@ -41,7 +39,7 @@ The project is structured in 4 phases:
 | Decision Tree           | 0.56           | 2.65           |
 | Linear Regression       | 11.39          | 20.09          |
 
-> Random Forest selected as best regression model with MAE of 0.25%.
+> Random Forest is the best regression model here, with a MAE of 0.25%.
 
 ## Expected Loss Result
 
@@ -51,7 +49,7 @@ The project is structured in 4 phases:
 | Expected Loss        | $7,815,756   |
 | % of portfolio       | 4.49%        |
 
-> A 4.49% expected loss is within acceptable range for consumer credit, offset by Lending Club's interest rates. Recommended to provision this amount prior to portfolio acquisition.
+> 4.49% expected loss. Acceptable range for consumer credit.
 
 ## Dataset
 - Source (original): Lending Club Loan Data (Kaggle)
@@ -61,19 +59,17 @@ The project is structured in 4 phases:
 1. Download the dataset from Kaggle:
 https://www.kaggle.com/datasets/db0boy/lending-club-loan-data-cleared/data
 2. Place the original files in your working directory.
-3. The dataset already includes: Run the preprocessing pipeline to generate:
+3. Run the EDA.ipynb file to generate:
 ```bash
 cleaned_data.csv
-X.csv
-target.csv
 ```
+4. Run main.py with the generated CSV.
 
 ## File Structure
 ```
 .
 ├── Models/
-│   ├── best_clf_model.pkl
-│   └── best_reg_model.pkl
+│   └── metadata.json
 ├── Visualizations/
 ├── .gitignore
 ├── EDA.ipynb
@@ -84,7 +80,6 @@ target.csv
 ├── requirements.txt
 ├── utils.py
 └── visualization.py
-
 ```
 
 ## How to Run
@@ -97,7 +92,7 @@ python main.py
 
 ## Dependencies
 
-pandas, numpy, matplotlib, seaborn, scikit-learn, lightgbm, joblib
+pandas, numpy, matplotlib, seaborn, json, scikit-learn, lightgbm
 
 ## License
 
