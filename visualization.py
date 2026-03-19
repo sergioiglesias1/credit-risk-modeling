@@ -1,12 +1,7 @@
 import matplotlib.pyplot as plt
 import seaborn as sns
-import numpy as np
-import pandas as pd
-from sklearn.metrics import RocCurveDisplay, confusion_matrix
-
 
 class Visualizer:
-
     def __init__(self, figsize=(10, 6), fontweight="bold"):
         self.figsize = figsize
         self.fontweight = fontweight
@@ -34,4 +29,3 @@ class Visualizer:
         plt.tight_layout()
         plt.savefig("viz/interest_rate_vs_default.png", dpi=150)
         plt.show()
-
