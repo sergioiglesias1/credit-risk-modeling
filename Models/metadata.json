@@ -1,0 +1,31 @@
+{
+  "pd_model": "LightGBM",
+  "lgd_model": "Random Forest",
+  "trained_on": "2025-03",
+  "dataset": "Lending Club Loan Data (Kaggle)",
+  "sample_frac": 0.2,
+  "pd_cv_auc": 0.7545,
+  "pd_best_params": {
+    "learning_rate": 0.1,
+    "max_depth": 8,
+    "n_estimators": 200
+  },
+  "lgd_best_params": {
+    "max_depth": null,
+    "min_samples_leaf": 1,
+    "min_samples_split": 2,
+    "n_estimators": 300
+  },
+  "pd_threshold": 0.1,
+  "pd_test_precision": 0.540,
+  "pd_test_recall": 0.950,
+  "pd_test_f1": 0.688,
+  "lgd_mae": 0.2497,
+  "lgd_rmse": 1.3821,
+  "portfolio_value": 174008000.0,
+  "expected_loss": 7815756.08,
+  "expected_loss_pct": 0.0449,
+  "positive_class": 1,
+  "positive_label": "default",
+  "scikit_learn_version": "1.6.1"
+}
