@@ -32,11 +32,11 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# ── Synthetic data ─────────────────────────────────────────────────────────
+# ── Data ─────────────────────────────────────────────────────────
 CLASS_IMBALANCE = pd.DataFrame({
     "Class": ["No Default", "Default"],
-    "Count": [28435, 7315],
-    "Pct": ["79.5%", "20.5%"]
+    "Count": [1859927, 279716],
+    "Pct": ["84.96", "15.04%"]
 })
 
 PD_BASE = pd.DataFrame([
@@ -144,7 +144,7 @@ st.markdown("""
   <span style='font-size:28px'>💳</span>
   <span style='color:#00e5ff;font-family:monospace;font-size:20px;font-weight:700;
     letter-spacing:0.1em;margin-left:10px'>CREDIT RISK PIPELINE</span>
-  <span style='color:#6b8fa8;font-size:12px;margin-left:12px'>Lending Club · Synthetic Demo</span>
+  <span style='color:#6b8fa8;font-size:12px;margin-left:12px'>Lending Club · Demo</span>
   <span style='float:right;background:#00ffa322;color:#00ffa3;border:1px solid #00ffa355;
     border-radius:20px;padding:3px 14px;font-size:12px;font-family:monospace'>✓ Trained</span>
 </div>
@@ -152,7 +152,7 @@ st.markdown("""
 
 # ── Tabs ───────────────────────────────────────────────────────────────────
 tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
-    "📊 EDA", "🤖 PD Models", "🎚️ Threshold", "📉 LGD", "💰 Exp. Loss", "📋 Metadata"
+    "📊 EDA", "PD Models", "🎚️ Threshold", "📉 LGD", "💰 Exp. Loss", "Metadata"
 ])
 
 # ══════════════════════════════════════════════════════════
@@ -160,9 +160,9 @@ tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
 # ══════════════════════════════════════════════════════════
 with tab1:
     c1, c2, c3 = st.columns(3)
-    c1.metric("Total Loans", "35,750")
+    c1.metric("Total Loans", "2,139,643")
     c2.metric("Features", "28")
-    c3.metric("Default Rate", "20.5%")
+    c3.metric("Default Rate", "15.04%")
 
     st.markdown("---")
     col1, col2 = st.columns(2)
@@ -171,12 +171,12 @@ with tab1:
         st.markdown("#### Class Imbalance")
         fig, ax = styled_fig()
         fig.set_size_inches(5, 3.5)
-        bars = ax.bar(["No Default", "Default"], [28435, 7315],
+        bars = ax.bar(["No Default", "Default"], [1859927, 279716],
                       color=[CYAN, RED], width=0.5, edgecolor="none")
         ax.set_ylabel("Count", color=MUTED)
         ax.set_title("Default vs Non-Default", color=CYAN,
                      fontfamily="monospace", fontsize=11)
-        for bar, val in zip(bars, [28435, 7315]):
+        for bar, val in zip(bars, [1859927, 279716]):
             ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 300,
                     f"{val:,}", ha="center", color=TEXT, fontsize=10)
         plt.tight_layout()
@@ -231,7 +231,7 @@ with tab2:
             .format("{:.4f}", subset=["CV_AUC"]),
         use_container_width=True, hide_index=True
     )
-    st.success("🏆 Best model: **LightGBM** — CV AUC 0.7891")
+    st.success("Best model is **LightGBM** with AUC 0.7891")
 
     st.markdown("---")
     col1, col2 = st.columns(2)
@@ -300,7 +300,7 @@ with tab3:
     c2.metric("Recall",    f"{selected['Recall']:.3f}")
     c3.metric("F1",        f"{selected['F1']:.3f}")
 
-    st.info("💡 **t=0.10** → Recall 0.951 — 95% of defaulters caught. "
+    st.info("**t=0.10** → Recall 0.951 — 95% of defaulters caught. "
             "Missing a defaulter (FN) costs far more than rejecting a good client (FP).")
 
     st.markdown("---")
@@ -329,7 +329,7 @@ with tab4:
                 .format("{:.4f}", subset=["MAE","RMSE","R2"]),
             use_container_width=True, hide_index=True
         )
-        st.success("🏆 Best: **Random Forest** — MAE = 0.2489")
+        st.success("Best model: **Random Forest** with a MAE = 0.2489")
 
     with col2:
         st.markdown("#### MAE Comparison")
@@ -380,7 +380,7 @@ with tab5:
         st.pyplot(fig)
 
     with col2:
-        st.markdown("#### EL Distribution per Loan")
+        st.markdown("#### Synthetic Portfolio Loss Distribution")
         fig2, ax2 = styled_fig()
         fig2.set_size_inches(5, 4)
         ax2.hist(el_per_loan, bins=40, color=RED, edgecolor="none", alpha=0.85)
