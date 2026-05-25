@@ -1,4 +1,3 @@
-import numpy as np
 import json
 import pandas as pd
 import warnings
@@ -7,9 +6,9 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import precision_recall_fscore_support
 from sklearn import __version__
 
-from modeling import ClassificationTrainer, RegressionTrainer
-from visualization import Visualizer
-from utils import ThresholdAnalyzer, ExpectedLossCalculator
+from .modeling import ClassificationTrainer, RegressionTrainer
+from .visualization import Visualizer
+from .utils import ThresholdAnalyzer, ExpectedLossCalculator
 warnings.filterwarnings('ignore')
 
 DATA_PATH = "Data/cleaned_data.csv"

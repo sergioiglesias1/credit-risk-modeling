@@ -9,9 +9,7 @@ from sklearn.metrics import (roc_auc_score, accuracy_score, f1_score,
                              classification_report, mean_absolute_error,
                              mean_squared_error, r2_score)
 from lightgbm import LGBMClassifier, LGBMRegressor
-
 logging.getLogger('lightgbm').setLevel(logging.WARNING)
-
 
 class ClassificationTrainer:
     def __init__(self, random_state=42):

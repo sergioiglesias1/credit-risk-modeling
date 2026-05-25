@@ -4,13 +4,15 @@
 ![scikit-learn](https://img.shields.io/badge/scikit--learn-F7931E?logo=scikit-learn&logoColor=white)
 ![LightGBM](https://img.shields.io/badge/LightGBM-2E86AB?logo=lightgbm&logoColor=white)
 [![Streamlit](https://img.shields.io/badge/Streamlit-Launch-brightgreen?logo=streamlit&logoColor=white)](https://credit-risk-pp.streamlit.app/)
+![License](https://img.shields.io/badge/License-MIT-green)
 
-This is a compehensive credit risk pipeline built on Lending Club loan data. Estimates the Expected Loss of a loan portfolio using the standard formula, with LGD (Loss Given Default) as a percentage:
+This is a comprehensive credit risk pipeline built on Lending Club loan data. Estimates the Expected Loss of a loan portfolio using the standard formula, with LGD (Loss Given Default) as a percentage:
 
 > `EL = PD × (LGD / 100) × EAD`
 > 
 ---
-### SEE THE LIVE APP [HERE](https://credit-risk-pp.streamlit.app/)
+### Live Demo
+👉 [HERE](https://credit-risk-pp.streamlit.app/)
 ---
 
 ## Project Overview
@@ -42,7 +44,7 @@ The threshold is set at 0.10 to prioritize risk reduction.
 - Recall = 0.95 → 95% of defaulters are identified  
 - Precision = 0.54 → moderate false positives  
 
-In credit risk, missing a defaulter (FN) is far more costly than rejecting a good client (FP). In fact, it is worse to lose €100,000 from one client than $10,000 from 10 clients each
+In credit risk, missing a defaulter (FN) is far more costly than rejecting a good client (FP). In fact, it is worse to lose $100,000 from one client than $10,000 from 10 clients each
 This threshold minimizes costly defaults, aligning with a **conservative risk strategy**.
 
 > Precision-Recall Trade-off: lower approvals, higher portfolio quality.
@@ -69,48 +71,57 @@ This threshold minimizes costly defaults, aligning with a **conservative risk st
 > 4.49% expected loss. Acceptable range for consumer credit.
 
 ## Dataset
-- Source (original): Lending Club Loan Data (Kaggle)
-- Availability: The dataset is not included in this repository due to size.
 
-## How to obtain the data
-1. Download the dataset from Kaggle:
-https://www.kaggle.com/datasets/db0boy/lending-club-loan-data-cleared/data
-2. Place the original files in your working directory.
-3. Run the EDA.ipynb file to generate:
-```bash
-cleaned_data.csv
-```
-4. Run main.py with the generated CSV.
+The dataset is not included due to size constraints.
+
+Download it from Kaggle and preprocess it using ETL.ipynb.
 
 ## File Structure
 ```
 .
+├── app/
+│   ├── __init__.py
+│   ├── main.py                  # model training
+│   ├── modeling.py
+│   ├── utils.py
+│   └── visualization.py
 ├── Models/
 │   └── metadata.json
 ├── Visualizations/
 ├── .gitignore
-├── EDA.ipynb
+├── ETL.ipynb                   # Data quality, feature engineering & risk analysis
 ├── LICENSE
-├── main.py
-├── modeling.py
 ├── README.md
 ├── requirements.txt
-├── streamlit_app.py
-├── utils.py
-└── visualization.py
+└── streamlit_app.py            # deployed application
 ```
 
 ## How to Run
 
+### 1. Install dependencies
 ```bash
 pip install -r requirements.txt
-jupyter notebook EDA.ipynb
-python main.py
 ```
 
-## Dependencies
+### 2. Run ETL (Data Preparation)
+Open and execute the Jupyter notebook to generate cleaned data:
+```
+ETL.ipynb
+```
+This generates `Data/cleaned_data.csv`
 
-pandas, numpy, matplotlib, seaborn, json, scikit-learn, lightgbm
+### 3. Train Models
+```bash
+python -m app.main
+```
+This trains PD (classification) and LGD (regression) models and generates `Models/metadata.json`
+
+### 4. Launch Dashboard
+```bash
+streamlit run streamlit_app.py
+```
+
+> **Note:** For production, the app is already deployed at [credit-risk-pp.streamlit.app](https://credit-risk-pp.streamlit.app/)
 
 ## License
 
