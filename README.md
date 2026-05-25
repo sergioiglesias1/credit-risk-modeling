@@ -11,7 +11,7 @@ This is a comprehensive credit risk pipeline built on Lending Club loan data. Es
 > `EL = PD × (LGD / 100) × EAD`
 > 
 ---
-### Live Demo Here 👉 [HERE](https://credit-risk-pp.streamlit.app/)
+### 👉 [Live Demo Here](https://credit-risk-pp.streamlit.app/)
 ---
 
 ## Project Overview
