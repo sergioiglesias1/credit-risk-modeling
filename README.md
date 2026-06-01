@@ -6,7 +6,7 @@
 [![Streamlit](https://img.shields.io/badge/Streamlit-Launch-brightgreen?logo=streamlit&logoColor=white)](https://credit-risk-pp.streamlit.app/)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
-This is a comprehensive credit risk pipeline built on Lending Club loan data. Estimates the Expected Loss of a loan portfolio using the standard formula, with LGD (Loss Given Default) as a percentage:
+This is a comprehensive credit risk pipeline built on Lending Club loan data. Estimates the Expected Loss of a loan portfolio using the standard formula, with LGD (Loss Given Default) as a percentage of exposure.
 
 > `EL = PD × (LGD / 100) × EAD`
 > 
@@ -18,7 +18,7 @@ This is a comprehensive credit risk pipeline built on Lending Club loan data. Es
 
 The project is structured in 4 phases:
 
-- Data Preparation: The raw Lending Club dataset comes with noise, nulls and post-default variables that would cause data leakage to the target variable. We impute those, delete some irrelevant variables, cap outliers and encode cardinal variables before any model sees the data.
+- Data Preparation: The raw Lending Club dataset comes with noise, nulls and post-default variables that would cause data leakage to the target variable. We impute those, delete some irrelevant variables and engineer features based on domain knowledge and statistical insights.
 - PD Model: Binary classification to estimate the probability of not paying for each loan.
 - LGD Model: Regression trained exclusively on defaulted loans to predict loss magnitude.
 - Expected Loss: Loss estimation combining both models into a single dollar figure, applying the formula above.
@@ -89,6 +89,7 @@ Download it from Kaggle and preprocess it using ETL.ipynb.
 ├── Visualizations/
 ├── .gitignore
 ├── ETL.ipynb                   # Data quality, feature engineering & risk analysis
+├── ETL.html                    # HTML version (view in browser)
 ├── LICENSE
 ├── README.md
 ├── requirements.txt
@@ -103,9 +104,12 @@ pip install -r requirements.txt
 ```
 
 ### 2. Run ETL (Data Preparation)
+
+📊 **[View ETL Notebook](ETL.html)** (Click to see data processing)
+
 Open and execute the Jupyter notebook to generate cleaned data:
-```
-ETL.ipynb
+```bash
+jupyter notebook ETL.ipynb
 ```
 This generates `Data/cleaned_data.csv`
 
