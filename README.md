@@ -89,7 +89,6 @@ Download it from Kaggle and preprocess it using ETL.ipynb.
 ├── Visualizations/
 ├── .gitignore
 ├── ETL.ipynb                   # Data quality, feature engineering & risk analysis
-├── ETL.html                    # HTML version (view in browser)
 ├── LICENSE
 ├── README.md
 ├── requirements.txt
@@ -104,8 +103,6 @@ pip install -r requirements.txt
 ```
 
 ### 2. Run ETL (Data Preparation)
-
-📊 **[View ETL Notebook](ETL.html)** (Click to see data processing)
 
 Open and execute the Jupyter notebook to generate cleaned data:
 ```bash
