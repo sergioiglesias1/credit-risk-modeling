@@ -1,6 +1,7 @@
 # Credit Scoring & Expected Loss - Lending Club
 
 ![Python >= 3.13](https://img.shields.io/badge/Python-%3E%3D3.13-blue?logo=python&logoColor=white)
+[![CI](https://github.com/sergioiglesias1/credit-risk-modeling/actions/workflows/ci.yml/badge.svg)](https://github.com/sergioiglesias1/credit-risk-modeling/actions/workflows/ci.yml)
 ![scikit-learn](https://img.shields.io/badge/scikit--learn-F7931E?logo=scikit-learn&logoColor=white)
 ![LightGBM](https://img.shields.io/badge/LightGBM-2E86AB?logo=lightgbm&logoColor=white)
 [![Streamlit](https://img.shields.io/badge/Streamlit-Launch-brightgreen?logo=streamlit&logoColor=white)](https://credit-risk-pp.streamlit.app/)
