@@ -78,15 +78,16 @@ Download it from Kaggle and preprocess it using ETL.ipynb.
 ## File Structure
 ```
 .
+├── .github/                     # Automated checks on every push: install dependencies and lint with `ruff`.
 ├── app/
 │   ├── __init__.py
 │   ├── main.py                  # model training
 │   ├── modeling.py
 │   ├── utils.py
-│   └── visualization.py
-├── Models/
+│   └── plots.py
+├── models/
 │   └── metadata.json
-├── Visualizations/
+├── visualizations/
 ├── .gitignore
 ├── ETL.ipynb                   # Data quality, feature engineering & risk analysis
 ├── LICENSE
