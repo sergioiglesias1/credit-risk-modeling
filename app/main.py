@@ -12,7 +12,7 @@ from .utils import ThresholdAnalyzer, ExpectedLossCalculator
 warnings.filterwarnings('ignore')
 
 DATA_PATH = "Data/cleaned_data.csv"
-META_PATH = "Models/metadata.json"
+META_PATH = "models/metadata.json"
 
 RANDOM_STATE = 42
 TEST_SIZE = 0.2

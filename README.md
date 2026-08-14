@@ -2,6 +2,8 @@
 
 ![Python >= 3.13](https://img.shields.io/badge/Python-%3E%3D3.13-blue?logo=python&logoColor=white)
 [![CI](https://github.com/sergioiglesias1/credit-risk-modeling/actions/workflows/ci.yml/badge.svg)](https://github.com/sergioiglesias1/credit-risk-modeling/actions/workflows/ci.yml)
+[![CD](https://github.com/sergioiglesias1/credit-risk-modeling/actions/workflows/cd.yml/badge.svg)](https://github.com/sergioiglesias1/credit-risk-modeling/actions/workflows/cd.yml)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 ![scikit-learn](https://img.shields.io/badge/scikit--learn-F7931E?logo=scikit-learn&logoColor=white)
 ![LightGBM](https://img.shields.io/badge/LightGBM-2E86AB?logo=lightgbm&logoColor=white)
 [![Streamlit](https://img.shields.io/badge/Streamlit-Launch-brightgreen?logo=streamlit&logoColor=white)](https://credit-risk-pp.streamlit.app/)
@@ -79,7 +81,7 @@ Download it from Kaggle and preprocess it using ETL.ipynb.
 ## File Structure
 ```
 .
-├── .github/                     # Automated checks on every push: install dependencies and lint with `ruff`.
+├── .github/                     # CI: lint with `ruff` on every push. CD: periodic ping to keep the Streamlit app awake.
 ├── app/
 │   ├── __init__.py
 │   ├── main.py                  # model training
@@ -88,7 +90,7 @@ Download it from Kaggle and preprocess it using ETL.ipynb.
 │   └── plots.py
 ├── models/
 │   └── metadata.json
-├── visualizations/
+├── viz/
 ├── .gitignore
 ├── ETL.ipynb                   # Data quality, feature engineering & risk analysis
 ├── LICENSE
@@ -116,7 +118,7 @@ This generates `Data/cleaned_data.csv`
 ```bash
 python -m app.main
 ```
-This trains PD (classification) and LGD (regression) models and generates `Models/metadata.json`
+This trains PD (classification) and LGD (regression) models and generates `models/metadata.json`
 
 ### 4. Launch Dashboard
 ```bash

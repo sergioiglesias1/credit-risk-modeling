@@ -1,0 +1,17 @@
+name: CD
+
+on:
+  schedule:
+    - cron: "0 */8 * * *"
+  workflow_dispatch:
+
+jobs:
+  keep-alive:
+    name: Ping Streamlit App
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Wake up / keep alive
+        run: |
+          curl --fail --silent --show-error --retry 3 --retry-delay 10 \
+            --max-time 30 https://credit-risk-pp.streamlit.app/ -o /dev/null
