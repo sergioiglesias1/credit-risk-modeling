@@ -44,6 +44,9 @@
       "verification_status",
       "loan_purpose"
     ],
+    "text": [
+      "job_title"
+    ],
     "categories": {
       "grade": [
         "A1",
@@ -114,116 +117,121 @@
   "pd": {
     "model": "LightGBM",
     "params": {
+      "subsample_freq": 1,
+      "subsample": 0.8,
+      "reg_lambda": 0,
       "num_leaves": 15,
-      "n_estimators": 200,
-      "min_child_samples": 200,
-      "learning_rate": 0.1
+      "n_estimators": 800,
+      "min_child_samples": 500,
+      "learning_rate": 0.02,
+      "colsample_bytree": 0.7
     },
-    "calibration": "sigmoid on validation vintage (class_weight='balanced' in training)",
+    "calibration": "class_weight='balanced'; sigmoid fitted on validation with the train-only model, then refitted on train + validation",
+    "train_only_test_auc": 0.6896,
     "test": {
-      "auc": 0.6858,
-      "gini": 0.3716,
-      "ks": 0.2697,
-      "brier": 0.1203,
-      "mean_pd": 0.1286,
+      "auc": 0.6947,
+      "gini": 0.3894,
+      "ks": 0.2858,
+      "brier": 0.1194,
+      "mean_pd": 0.1351,
       "default_rate": 0.1492
     },
     "full_model_test": {
-      "auc": 0.6877,
-      "gini": 0.3753,
-      "ks": 0.2722,
-      "brier": 0.1202,
-      "mean_pd": 0.1285,
+      "auc": 0.6974,
+      "gini": 0.3948,
+      "ks": 0.2889,
+      "brier": 0.1191,
+      "mean_pd": 0.1361,
       "default_rate": 0.1492
     },
-    "auc_cost_vs_full": 0.0019,
+    "auc_cost_vs_full": 0.0027,
     "grade_only_auc": 0.6785,
     "candidates": [
       {
         "feature_set": "full",
         "model": "Logistic Regression",
-        "valid_auc": 0.6802,
-        "test_auc": 0.6857
+        "valid_auc": 0.681,
+        "test_auc": 0.6866
       },
       {
         "feature_set": "full",
         "model": "LightGBM",
-        "valid_auc": 0.6838,
-        "test_auc": 0.6877
+        "valid_auc": 0.6877,
+        "test_auc": 0.6911
       },
       {
         "feature_set": "app",
         "model": "Logistic Regression",
-        "valid_auc": 0.6787,
-        "test_auc": 0.6853
+        "valid_auc": 0.6793,
+        "test_auc": 0.6861
       },
       {
         "feature_set": "app",
         "model": "LightGBM",
-        "valid_auc": 0.6828,
-        "test_auc": 0.6858
+        "valid_auc": 0.6852,
+        "test_auc": 0.6896
       }
     ],
     "deciles": [
       {
         "decile": 1,
         "loans": 28279,
-        "mean_pd": 0.0367,
-        "default_rate": 0.0337
+        "mean_pd": 0.0319,
+        "default_rate": 0.0317
       },
       {
         "decile": 2,
         "loans": 28279,
-        "mean_pd": 0.051,
-        "default_rate": 0.0613
+        "mean_pd": 0.0535,
+        "default_rate": 0.0563
       },
       {
         "decile": 3,
         "loans": 28279,
-        "mean_pd": 0.0667,
-        "default_rate": 0.0852
+        "mean_pd": 0.0724,
+        "default_rate": 0.0788
       },
       {
         "decile": 4,
         "loans": 28279,
-        "mean_pd": 0.0827,
-        "default_rate": 0.1016
+        "mean_pd": 0.0909,
+        "default_rate": 0.1012
       },
       {
         "decile": 5,
         "loans": 28279,
-        "mean_pd": 0.1001,
-        "default_rate": 0.126
+        "mean_pd": 0.11,
+        "default_rate": 0.1208
       },
       {
         "decile": 6,
         "loans": 28278,
-        "mean_pd": 0.1204,
-        "default_rate": 0.1463
+        "mean_pd": 0.131,
+        "default_rate": 0.1497
       },
       {
         "decile": 7,
         "loans": 28279,
-        "mean_pd": 0.1453,
-        "default_rate": 0.1737
+        "mean_pd": 0.1555,
+        "default_rate": 0.172
       },
       {
         "decile": 8,
         "loans": 28279,
-        "mean_pd": 0.1768,
-        "default_rate": 0.205
+        "mean_pd": 0.1852,
+        "default_rate": 0.2092
       },
       {
         "decile": 9,
         "loans": 28279,
-        "mean_pd": 0.2181,
-        "default_rate": 0.2413
+        "mean_pd": 0.2243,
+        "default_rate": 0.2458
       },
       {
         "decile": 10,
         "loans": 28279,
-        "mean_pd": 0.2887,
-        "default_rate": 0.3175
+        "mean_pd": 0.2958,
+        "default_rate": 0.3262
       }
     ]
   },
@@ -269,152 +277,152 @@
     "threshold": 0.1641,
     "at_threshold": {
       "threshold": 0.1641,
-      "approval_rate": 0.7135,
-      "bad_rate_approved": 0.1054,
-      "recall": 0.4958,
-      "precision": 0.2581
+      "approval_rate": 0.6822,
+      "bad_rate_approved": 0.0991,
+      "recall": 0.5465,
+      "precision": 0.2565
     },
     "threshold_table": [
       {
         "threshold": 0.05,
-        "approval_rate": 0.1445,
-        "bad_rate_approved": 0.0398,
-        "recall": 0.9614,
-        "precision": 0.1676
+        "approval_rate": 0.1313,
+        "bad_rate_approved": 0.0358,
+        "recall": 0.9685,
+        "precision": 0.1663
       },
       {
         "threshold": 0.1,
-        "approval_rate": 0.4503,
-        "bad_rate_approved": 0.076,
-        "recall": 0.7706,
-        "precision": 0.2091
+        "approval_rate": 0.3989,
+        "bad_rate_approved": 0.0669,
+        "recall": 0.8211,
+        "precision": 0.2037
       },
       {
         "threshold": 0.15,
-        "approval_rate": 0.6674,
-        "bad_rate_approved": 0.0999,
-        "recall": 0.5528,
-        "precision": 0.2479
+        "approval_rate": 0.6301,
+        "bad_rate_approved": 0.093,
+        "recall": 0.6073,
+        "precision": 0.2449
       },
       {
         "threshold": 0.2,
-        "approval_rate": 0.8113,
-        "bad_rate_approved": 0.1181,
-        "recall": 0.3576,
-        "precision": 0.2827
+        "approval_rate": 0.7929,
+        "bad_rate_approved": 0.1139,
+        "recall": 0.3943,
+        "precision": 0.284
       },
       {
         "threshold": 0.25,
-        "approval_rate": 0.9095,
-        "bad_rate_approved": 0.1319,
-        "recall": 0.1957,
-        "precision": 0.3224
+        "approval_rate": 0.9009,
+        "bad_rate_approved": 0.1297,
+        "recall": 0.2169,
+        "precision": 0.3265
       },
       {
         "threshold": 0.3,
-        "approval_rate": 0.9679,
-        "bad_rate_approved": 0.1419,
-        "recall": 0.0789,
-        "precision": 0.3668
+        "approval_rate": 0.9627,
+        "bad_rate_approved": 0.1404,
+        "recall": 0.0936,
+        "precision": 0.3738
       },
       {
         "threshold": 0.35,
-        "approval_rate": 0.9937,
-        "bad_rate_approved": 0.1473,
-        "recall": 0.0185,
-        "precision": 0.4375
+        "approval_rate": 0.9902,
+        "bad_rate_approved": 0.1463,
+        "recall": 0.0284,
+        "precision": 0.4331
       },
       {
         "threshold": 0.4,
-        "approval_rate": 0.9995,
-        "bad_rate_approved": 0.149,
-        "recall": 0.0018,
-        "precision": 0.5282
+        "approval_rate": 0.9983,
+        "bad_rate_approved": 0.1485,
+        "recall": 0.0061,
+        "precision": 0.5464
       }
     ],
     "margin_sensitivity": [
       {
         "margin": 0.05,
         "threshold": 0.0894,
-        "approval_rate": 0.3903,
-        "bad_rate_approved": 0.0695,
-        "recall": 0.8182,
-        "precision": 0.2002
+        "approval_rate": 0.3418,
+        "bad_rate_approved": 0.0606,
+        "recall": 0.861,
+        "precision": 0.1951
       },
       {
         "margin": 0.1,
         "threshold": 0.1641,
-        "approval_rate": 0.7135,
-        "bad_rate_approved": 0.1054,
-        "recall": 0.4958,
-        "precision": 0.2581
+        "approval_rate": 0.6822,
+        "bad_rate_approved": 0.0991,
+        "recall": 0.5465,
+        "precision": 0.2565
       },
       {
         "margin": 0.155,
         "threshold": 0.2333,
-        "approval_rate": 0.8814,
-        "bad_rate_approved": 0.1279,
-        "recall": 0.2444,
-        "precision": 0.3074
+        "approval_rate": 0.8705,
+        "bad_rate_approved": 0.1249,
+        "recall": 0.2708,
+        "precision": 0.3119
       }
     ]
   },
   "expected_loss": {
     "portfolio_funded": 3620698700.0,
-    "expected_loss": 222656705.02,
-    "expected_loss_pct": 0.0615,
+    "expected_loss": 235355721.38,
+    "expected_loss_pct": 0.065,
     "realized_loss": 267360559.18,
     "realized_loss_pct": 0.0738,
     "by_decile": [
       {
         "decile": 1,
-        "el_pct": 0.0184,
-        "realized_pct": 0.0145
+        "el_pct": 0.0161,
+        "realized_pct": 0.0139
       },
       {
         "decile": 2,
-        "el_pct": 0.0256,
-        "realized_pct": 0.0271
+        "el_pct": 0.0269,
+        "realized_pct": 0.0246
       },
       {
         "decile": 3,
-        "el_pct": 0.0335,
-        "realized_pct": 0.0394
+        "el_pct": 0.0364,
+        "realized_pct": 0.0369
       },
       {
         "decile": 4,
-        "el_pct": 0.0417,
-        "realized_pct": 0.0491
+        "el_pct": 0.0458,
+        "realized_pct": 0.0488
       },
       {
         "decile": 5,
-        "el_pct": 0.0505,
-        "realized_pct": 0.0631
+        "el_pct": 0.0555,
+        "realized_pct": 0.0586
       },
       {
         "decile": 6,
-        "el_pct": 0.0609,
-        "realized_pct": 0.0754
+        "el_pct": 0.0662,
+        "realized_pct": 0.0755
       },
       {
         "decile": 7,
-        "el_pct": 0.0736,
-        "realized_pct": 0.0919
+        "el_pct": 0.0787,
+        "realized_pct": 0.0908
       },
       {
         "decile": 8,
-        "el_pct": 0.0897,
-        "realized_pct": 0.1112
+        "el_pct": 0.0939,
+        "realized_pct": 0.1121
       },
       {
         "decile": 9,
-        "el_pct": 0.111,
-        "realized_pct": 0.1315
+        "el_pct": 0.1141,
+        "realized_pct": 0.134
       },
       {
         "decile": 10,
-        "el_pct": 0.1473,
-        "realized_pct": 0.1838
+        "el_pct": 0.1511,
+        "realized_pct": 0.187
       }
     ]
   },

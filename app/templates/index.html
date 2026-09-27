@@ -25,7 +25,7 @@
   <div class="table-wrap">
   <table class="kv">
     <tbody>
-      <tr><th>PD model</th><td>{{ m.pd.model }}, {{ m.features.numeric|length + m.features.categorical|length }} application-time features</td></tr>
+      <tr><th>PD model</th><td>{{ m.pd.model }}, {{ m.features.numeric|length + m.features.categorical|length + m.features.text|length }} application-time features</td></tr>
       <tr><th>Test AUC / Gini / KS</th><td class="num">{{ m.pd.test.auc|num }} / {{ m.pd.test.gini|num }} / {{ m.pd.test.ks|num }}</td></tr>
       <tr><th>Test default rate, observed / predicted</th><td class="num">{{ m.pd.test.default_rate|pct }} / {{ m.pd.test.mean_pd|pct }}</td></tr>
       <tr><th>Mean LGD, observed (test)</th><td class="num">{{ m.lgd.test_mean_observed|pct }}</td></tr>
@@ -42,7 +42,8 @@
   <p>
     {{ m.dataset }}. Only vintages whose loans had fully run off are used, so every label is final:
     loans still being repaid would otherwise count as non-defaults. The split is by issue date.
-    Validation is used for tuning, probability calibration and the threshold; the test year is used once.
+    Validation is used for tuning and probability calibration; the selected model is then refitted on
+    train and validation together, so the most recent loans also train it. The test year is used once.
   </p>
   <div class="table-wrap">
   <table>
@@ -92,9 +93,11 @@
   <h2><span>4</span>Probability of default</h2>
   <p>
     Logistic regression and LightGBM, both inside a scikit-learn pipeline (median imputation with
-    missing-value flags, scaling, one-hot encoding) and trained with balanced class weights.
-    Balanced weights push probabilities up, so the selected model is recalibrated with a sigmoid
-    fitted on the validation vintage; ranking, and therefore AUC, is unchanged.
+    missing-value flags, scaling, one-hot encoding, and target encoding of the free-text job title,
+    cross-fitted so no loan sees its own label) and trained with balanced class weights.
+    Balanced weights push probabilities up, so a sigmoid fitted on the validation vintage maps them
+    back to default rates without changing the ranking. The selected model is then refitted on
+    train and validation, keeping that sigmoid.
     The deployed model uses only fields known at application time; the full model adds
     monthly payment, state and three more credit bureau counts.
   </p>
@@ -103,10 +106,12 @@
     <thead><tr><th>Features</th><th>Model</th><th class="num">Valid AUC</th><th class="num">Test AUC</th></tr></thead>
     <tbody>
     {% for c in m.pd.candidates %}
-      <tr{% if c.feature_set == 'app' and c.model == m.pd.model %} class="hl"{% endif %}>
+      <tr>
         <td>{{ 'Deployed' if c.feature_set == 'app' else 'Full' }}</td><td>{{ c.model }}</td>
         <td class="num">{{ c.valid_auc|num }}</td><td class="num">{{ c.test_auc|num }}</td></tr>
     {% endfor %}
+      <tr class="hl"><td>Deployed</td><td>{{ m.pd.model }}, refitted on train + valid</td>
+        <td class="num">n/a</td><td class="num">{{ m.pd.test.auc|num }}</td></tr>
     </tbody>
   </table>
   </div>
@@ -270,6 +275,7 @@
       <label>Open credit lines<input name="open_credit_lines" type="number" value="11" min="0" max="100" step="1" required></label>
       <label>Revolving balance (USD)<input name="revolving_balance" type="number" value="11000" min="0" step="1" required></label>
       <label>Revolving utilization (%)<input name="revolving_utilization" type="number" value="50" min="0" max="200" step="0.1" required></label>
+      <label>Job title<input name="job_title" type="text" value="Registered Nurse" maxlength="100" autocomplete="organization-title"></label>
     </div>
     <button type="submit">Score loan</button>
   </form>

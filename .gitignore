@@ -14,4 +14,3 @@ data/*.csv
 Data/*.csv
 data/*.parquet
 .python-version
-streamlit_app.py

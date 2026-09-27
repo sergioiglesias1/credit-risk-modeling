@@ -58,7 +58,10 @@ CAT_FEATURES = [
     'addr_state'
 ]
 
-FEATURES = NUM_FEATURES + CAT_FEATURES
+# Free-text job title, target-encoded (115k distinct values in train)
+TE_FEATURES = ['job_title']
+
+FEATURES = NUM_FEATURES + CAT_FEATURES + TE_FEATURES
 
 # Subset known at application time: the deployed model and the /predict form
 APP_NUM_FEATURES = [
@@ -82,5 +85,5 @@ APP_CAT_FEATURES = [
     'loan_purpose'
 ]
 
-APP_FEATURES = APP_NUM_FEATURES + APP_CAT_FEATURES
+APP_FEATURES = APP_NUM_FEATURES + APP_CAT_FEATURES + TE_FEATURES
 TARGETS = ['default', 'lgd', 'ead_default', 'recoveries']

@@ -21,7 +21,7 @@ Credit risk pipeline on Lending Club 36-month loans. A PD model and an LGD model
 ## Project Overview
 
 - **Data preparation** (`app/data.py`): targets are built from the payment columns, which are then excluded from the features. Only 36-month loans from vintages that had fully run off are used, so every label is final.
-- **PD model**: binary classification of default, trained with balanced class weights and recalibrated so its probabilities match observed default rates.
+- **PD model**: LightGBM on application-time fields, including the borrower's free-text job title (target-encoded with cross-fitting, so no loan sees its own label). Trained with balanced class weights, recalibrated so probabilities match observed default rates, then refitted on train + validation so the most recent loans also train it.
 - **LGD model**: regression on charged-off loans, `LGD = 1 - recoveries / EAD at default`, bounded to [0, 1].
 - **Expected loss**: `EAD = CCF × funded amount`, with the CCF estimated on training defaults, then backtested against the loss actually realized.
 - **Decision**: approve when the expected margin beats the expected loss, `(1 - PD) × m > PD × LGD × CCF`, with the margin `m` as an explicit parameter.
@@ -31,7 +31,7 @@ Credit risk pipeline on Lending Club 36-month loans. A PD model and an LGD model
 | Split | Issued | Use |
 | --- | --- | --- |
 | Train | 2007-06 to 2014-06 | Model fitting |
-| Validation | 2014-07 to 2014-12 | Tuning, probability calibration, threshold |
+| Validation | 2014-07 to 2014-12 | Tuning and calibration, then part of the final fit |
 | Test | 2015 | Reported once |
 
 Loans still being repaid in the raw data would count as non-defaults, which makes recent vintages look safe. That is why the split is by issue date and stops at 2015, the last vintage of 36-month loans that had fully run off. 60-month loans are left out: they never run off inside the data, so they cannot be tested out of time.
@@ -40,26 +40,26 @@ Loans still being repaid in the raw data would count as non-defaults, which make
 
 | Metric | Value |
 | --- | --- |
-| PD model | LightGBM, 15 application-time features |
-| Test AUC / Gini / KS | 0.686 / 0.372 / 0.270 |
-| Test AUC, full 20-feature model | 0.688 |
+| PD model | LightGBM, 16 application-time features |
+| Test AUC / Gini / KS | 0.695 / 0.389 / 0.286 |
+| Test AUC, full 21-feature model | 0.697 |
 | Test AUC, Lending Club sub-grade alone | 0.678 |
-| Default rate 2015, observed / predicted | 14.9% / 12.9% |
+| Default rate 2015, observed / predicted | 14.9% / 13.5% |
 | LGD model, test MAE / R² | LightGBM, 0.097 / 0.000 |
-| Expected loss, 2015 portfolio | $222.7M (6.15%) |
+| Expected loss, 2015 portfolio | $235.4M (6.50%) |
 | Realized loss, 2015 portfolio | $267.4M (7.38%) |
 | Approval threshold (margin 10%) | PD < 16.4% |
 
 | Margin | Threshold t* | Approval rate | Bad rate, approved | Defaults rejected |
 | --- | --- | --- | --- | --- |
-| 5.0% | 8.9% | 39.0% | 7.0% | 81.8% |
-| 10.0% | 16.4% | 71.4% | 10.5% | 49.6% |
-| 15.5% | 23.3% | 88.1% | 12.8% | 24.4% |
+| 5.0% | 8.9% | 34.2% | 6.1% | 86.1% |
+| 10.0% | 16.4% | 68.2% | 9.9% | 54.6% |
+| 15.5% | 23.3% | 87.1% | 12.5% | 27.1% |
 
 _Values from `models/metrics.json` (trained 2026-09-27). The live page always reads the current file._
 
-- The deployed model uses 15 fields known at application time, so the scoring form matches the model exactly. The 5 extra fields of the full model barely change AUC.
-- Lending Club's own sub-grade, used alone as a score, is almost as good as the model (see the table): most of the signal is already in their pricing. This dataset has no FICO score, the strongest predictor they priced on.
+- The deployed model uses 16 fields known at application time, so the scoring form matches the model exactly. The 5 extra fields of the full model barely change AUC.
+- Lending Club's own sub-grade, used alone as a score, gets most of the way to the model's AUC (see the table): most of the signal is already in their pricing. This dataset has no FICO score, the strongest predictor they priced on.
 - 2015 defaulted more than the vintages used for calibration, so PDs and expected loss come out below what was realized. The backtest by PD decile on the live page shows where.
 - LGD barely varies with application data (R² close to 0): recoveries on these loans are low for almost every borrower.
 
@@ -86,7 +86,7 @@ curl -X POST https://credit-risk-scoring.onrender.com/predict \
        "revolving_balance": 11000, "revolving_utilization": 50, "credit_history_years": 15}'
 ```
 
-Returns PD, LGD, EAD, expected loss and the approve/reject decision. Invalid inputs return `422` with the failing fields. Full schema at `/docs`.
+Returns PD, LGD, EAD, expected loss and the approve/reject decision.
 
 ## Dataset
 
@@ -120,7 +120,7 @@ The dataset is not included due to size constraints. Download the Lending Club l
 ### 1. Install dependencies
 ```bash
 pip install -r requirements.txt
-pip install pyarrow matplotlib    # only needed to retrain
+pip install pyarrow matplotlib    # only to retrain
 ```
 
 ### 2. Prepare the data
@@ -135,15 +135,9 @@ python -m app.train
 ```
 Trains PD and LGD, saves them to `models/`, writes `models/metrics.json` and the charts in `app/static/figures/`. The results page reads every figure from `metrics.json`.
 
-### 4. Run the app
-```bash
-uvicorn app.main:app --reload
-```
-Open http://127.0.0.1:8000. Tests: `pip install pytest httpx && pytest`.
-
 ## Deployment
 
-Render native Python web service, configured in `render.yaml`: build with `pip install -r requirements.txt`, start with `uvicorn app.main:app --host 0.0.0.0 --port $PORT`. The trained models are committed, so the service does not need the dataset.
+Served on Render as a native Python web service, configured in `render.yaml`. The trained models are committed, so the service does not need the dataset. Tests run in CI on every push.
 
 ## License
 

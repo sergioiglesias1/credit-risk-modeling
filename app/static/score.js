@@ -12,6 +12,7 @@ form.addEventListener('submit', async (e) => {
     el.removeAttribute('aria-invalid');
     if (el.type === 'number') payload[el.name] = el.value === '' ? null : Number(el.value);
     else if (el.name === 'emp_length_years') payload[el.name] = el.value === '' ? null : Number(el.value);
+    else if (el.name === 'job_title') payload[el.name] = el.value.trim() || null;
     else payload[el.name] = el.value;
   }
 

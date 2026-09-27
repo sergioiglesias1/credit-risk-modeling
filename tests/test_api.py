@@ -20,7 +20,8 @@ LOAN = {
     'open_credit_lines': 11,
     'revolving_balance': 11000,
     'revolving_utilization': 50,
-    'credit_history_years': 15
+    'credit_history_years': 15,
+    'job_title': 'Registered Nurse'
 }
 
 RISKY = {**LOAN, 'grade': 'G5', 'interest_rate': 29.9, 'dti': 45, 'inquiries_6m': 6,
@@ -72,6 +73,13 @@ def test_riskier_loan_gets_higher_pd(client):
 def test_predict_invalid(client, change):
     r = client.post('/predict', json={**LOAN, **change})
     assert r.status_code == 422
+
+
+@pytest.mark.parametrize('title', [None, '', 'Chief Dragon Tamer'], ids=['none', 'empty', 'unseen'])
+def test_job_title_optional_and_unseen(client, title):
+    r = client.post('/predict', json={**LOAN, 'job_title': title})
+    assert r.status_code == 200
+    assert 0 <= r.json()['pd'] <= 1
 
 
 def test_predict_missing_field(client):

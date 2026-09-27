@@ -2,6 +2,8 @@ from typing import Literal, Optional
 import pandas as pd
 from pydantic import BaseModel, ConfigDict, Field
 
+from .data import clean_job_title
+
 HomeOwnership = Literal['MORTGAGE', 'OTHER', 'OWN', 'RENT']
 Verification = Literal['Not Verified', 'Source Verified', 'Verified']
 Purpose = Literal['car', 'credit_card', 'debt_consolidation', 'educational', 'home_improvement',
@@ -24,7 +26,8 @@ COLUMNS = {
     'open_credit_lines':     'num_open_credit_lines',
     'revolving_balance':     'total_credit_revolving_bal',
     'revolving_utilization': 'used_credit_share',
-    'credit_history_years':  'credit_history_years'
+    'credit_history_years':  'credit_history_years',
+    'job_title':             'job_title'
 }
 
 
@@ -46,10 +49,13 @@ class LoanApplication(BaseModel):
     revolving_balance:     float = Field(ge=0, le=5_000_000)
     revolving_utilization: float = Field(ge=0, le=200, description="Revolving balance / limit, %")
     credit_history_years:  float = Field(ge=0, le=80, description="Years since first credit line")
+    job_title:             Optional[str] = Field(default=None, max_length=100, description="Free text, e.g. Registered Nurse")
 
     def to_frame(self):
         row = {COLUMNS[k]: v for k, v in self.model_dump().items()}
-        return pd.DataFrame([row]).astype({'emp_length_years': float})
+        X = pd.DataFrame([row]).astype({'emp_length_years': float})
+        X['job_title'] = clean_job_title(X['job_title'])
+        return X
 
 
 class Prediction(BaseModel):

@@ -10,7 +10,7 @@ from lightgbm import __version__ as lightgbm_version
 from .config import (PD_MODEL_PATH, LGD_MODEL_PATH, METRICS_PATH, FIGURES_DIR,
                      RANDOM_STATE, N_ITER, THRESHOLDS, MARGIN, MARGIN_GRID,
                      NUM_FEATURES, CAT_FEATURES, APP_NUM_FEATURES, APP_CAT_FEATURES,
-                     APP_FEATURES)
+                     APP_FEATURES, TE_FEATURES)
 from .data import load_processed
 from .modeling import ClassificationTrainer, RegressionTrainer
 from .plots import Visualizer
@@ -44,17 +44,17 @@ def main():
 
     # PD: full feature set vs the application-time subset served by the API
     feature_sets = {
-        'full': (NUM_FEATURES, CAT_FEATURES),
-        'app':  (APP_NUM_FEATURES, APP_CAT_FEATURES)
+        'full': (NUM_FEATURES, CAT_FEATURES, TE_FEATURES),
+        'app':  (APP_NUM_FEATURES, APP_CAT_FEATURES, TE_FEATURES)
     }
     pd_runs = {}
-    for label, (num_cols, cat_cols) in feature_sets.items():
-        print(f"\n=== PD model | {label} features ({len(num_cols) + len(cat_cols)})")
-        cols = num_cols + cat_cols
-        trainer = ClassificationTrainer(num_cols, cat_cols, random_state=RANDOM_STATE)
+    for label, (num_cols, cat_cols, te_cols) in feature_sets.items():
+        print(f"\n=== PD model | {label} features ({len(num_cols) + len(cat_cols) + len(te_cols)})")
+        cols = num_cols + cat_cols + te_cols
+        trainer = ClassificationTrainer(num_cols, cat_cols, te_cols, random_state=RANDOM_STATE)
         trainer.hyperparameter_search(train[cols], train['default'],
                                       valid[cols], valid['default'], n_iter=N_ITER)
-        model = trainer.calibrate(valid[cols], valid['default'])
+        model = trainer.calibrate(train[cols], train['default'], valid[cols], valid['default'])
         proba = model.predict_proba(test[cols])[:, 1]
         test_auc = trainer.evaluate(test[cols], test['default'])
 
@@ -119,7 +119,7 @@ def main():
     full_auc = pd_runs['full']['metrics']['auc']
     viz.roc(y_test, {
         f"Deployed, {len(APP_FEATURES)} features (AUC {pd_app['metrics']['auc']:.3f})": proba,
-        f"Full, {len(NUM_FEATURES) + len(CAT_FEATURES)} features (AUC {full_auc:.3f})": pd_runs['full']['proba']
+        f"Full, {len(NUM_FEATURES) + len(CAT_FEATURES) + len(TE_FEATURES)} features (AUC {full_auc:.3f})": pd_runs['full']['proba']
     })
     viz.calibration(by_decile)
     viz.el_distribution(result['el_per_loan'] / test['funded_amnt'].values)
@@ -144,12 +144,14 @@ def main():
         "features": {
             "numeric": APP_NUM_FEATURES,
             "categorical": APP_CAT_FEATURES,
+            "text": TE_FEATURES,
             "categories": {c: sorted(train[c].dropna().unique().tolist()) for c in APP_CAT_FEATURES}
         },
         "pd": {
             "model": pd_app['trainer'].best_name,
             "params": pd_app['trainer'].results[pd_app['trainer'].best_name]['best_params'],
-            "calibration": "sigmoid on validation vintage (class_weight='balanced' in training)",
+            "calibration": "class_weight='balanced'; sigmoid fitted on validation with the train-only model, then refitted on train + validation",
+            "train_only_test_auc": round(pd_app['test_auc'][pd_app['trainer'].best_name], 4),
             "test": rounded(pd_app['metrics']),
             "full_model_test": rounded(pd_runs['full']['metrics']),
             "auc_cost_vs_full": round(full_auc - pd_app['metrics']['auc'], 4),

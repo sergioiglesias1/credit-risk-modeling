@@ -40,8 +40,15 @@ def build_targets(df):
     return df[resolved | (df['default'] == 1)]
 
 
+def clean_job_title(s):
+    # 'Registered Nurse ' and 'registered nurse' are the same job
+    s = s.fillna('').str.lower().str.replace(r'[^a-z ]', ' ', regex=True).str.split().str.join(' ')
+    return s.replace('', 'missing')
+
+
 def build_features(df):
     df['emp_length_years'] = df['emp_length'].map(EMP_LENGTH_YEARS)
+    df['job_title'] = clean_job_title(df['emp_title'])
 
     earliest = df['earliest_cr_line_year'] + (df['earliest_cr_line_month'].map(MONTHS) - 1) / 12
     issued   = df['issue_date_year'] + (df['issue_date_month'].map(MONTHS) - 1) / 12
