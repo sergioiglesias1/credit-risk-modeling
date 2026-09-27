@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Credit risk scoring, Lending Club 36-month loans</title>
+  <meta name="description" content="PD, LGD and expected loss models on Lending Club loans, validated out of time.">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header>
+  <p class="meta">Technical note &middot; trained {{ m.trained_on }}</p>
+  <h1>Credit risk scoring on Lending Club 36-month loans</h1>
+  <p class="lead">
+    A probability of default (PD) model and a loss given default (LGD) model, combined into an
+    expected loss per loan: <code>EL = PD &times; LGD &times; EAD</code>. Models are trained on
+    loans issued up to mid-2014 and tested on the full 2015 vintage, which none of them saw.
+    Every figure on this page is read from <code>models/metrics.json</code>, written by the training script.
+  </p>
+</header>
+
+<main>
+<section>
+  <h2><span>1</span>Summary</h2>
+  <div class="table-wrap">
+  <table class="kv">
+    <tbody>
+      <tr><th>PD model</th><td>{{ m.pd.model }}, {{ m.features.numeric|length + m.features.categorical|length }} application-time features</td></tr>
+      <tr><th>Test AUC / Gini / KS</th><td class="num">{{ m.pd.test.auc|num }} / {{ m.pd.test.gini|num }} / {{ m.pd.test.ks|num }}</td></tr>
+      <tr><th>Test default rate, observed / predicted</th><td class="num">{{ m.pd.test.default_rate|pct }} / {{ m.pd.test.mean_pd|pct }}</td></tr>
+      <tr><th>Mean LGD, observed (test)</th><td class="num">{{ m.lgd.test_mean_observed|pct }}</td></tr>
+      <tr><th>Expected loss, 2015 portfolio</th><td class="num">{{ m.expected_loss.expected_loss|money }} ({{ m.expected_loss.expected_loss_pct|pct(2) }})</td></tr>
+      <tr><th>Realized loss, 2015 portfolio</th><td class="num">{{ m.expected_loss.realized_loss|money }} ({{ m.expected_loss.realized_loss_pct|pct(2) }})</td></tr>
+      <tr><th>Approval threshold</th><td class="num">PD &lt; {{ m.policy.threshold|pct }} &middot; approves {{ m.policy.at_threshold.approval_rate|pct }}</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section>
+  <h2><span>2</span>Data and validation</h2>
+  <p>
+    {{ m.dataset }}. Only vintages whose loans had fully run off are used, so every label is final:
+    loans still being repaid would otherwise count as non-defaults. The split is by issue date.
+    Validation is used for tuning, probability calibration and the threshold; the test year is used once.
+  </p>
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Split</th><th>Issued</th><th class="num">Loans</th><th class="num">Default rate</th></tr></thead>
+    <tbody>
+    {% for s in m.splits %}
+      <tr><td>{{ s.split|capitalize }}</td><td>{{ s.first_issue|period }} to {{ s.last_issue|period }}</td>
+          <td class="num">{{ s.loans|int }}</td><td class="num">{{ s.default_rate|pct(2) }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section>
+  <h2><span>3</span>Exploratory analysis</h2>
+  <p>
+    Figures from the exploratory notebook (<code>ETL.ipynb</code>). They cover the whole dataset,
+    all terms and vintages, before the filters used for modelling, so counts differ from the splits above.
+  </p>
+  <figure>
+    <img src="/viz/class_imbalance_graph.png" alt="Count of non-defaulted and defaulted loans" width="590" height="489" loading="lazy" class="narrow">
+    <figcaption><b>Figure 1.</b> Defaulted and non-defaulted loans.</figcaption>
+  </figure>
+  <figure>
+    <img src="/viz/interest_rate_defaults.png" alt="Interest rate distribution by default status" width="989" height="590" loading="lazy">
+    <figcaption><b>Figure 2.</b> Interest rate by default status: defaulted loans were priced higher.</figcaption>
+  </figure>
+  <details>
+    <summary>Correlation matrix and feature distributions</summary>
+    <figure>
+      <a href="/viz/corr_matrix.png"><img src="/viz/corr_matrix.png" alt="Correlation matrix of numeric features" width="2376" height="1990" loading="lazy"></a>
+      <figcaption>Correlation matrix of numeric features. Open the image for full size.</figcaption>
+    </figure>
+    <figure>
+      <a href="/viz/boxplots_without_IQR.png"><img src="/viz/boxplots_without_IQR.png" alt="Box plots of numeric features by default status" width="4990" height="1989" loading="lazy"></a>
+      <figcaption>Numeric features by default status. Open the image for full size.</figcaption>
+    </figure>
+    <figure>
+      <a href="/viz/boxplots_with_IQR.png"><img src="/viz/boxplots_with_IQR.png" alt="Box plots of numeric features by default status after IQR capping" width="4990" height="1989" loading="lazy"></a>
+      <figcaption>Same features after IQR capping, explored in the notebook but not used by the models.</figcaption>
+    </figure>
+  </details>
+</section>
+
+<section>
+  <h2><span>4</span>Probability of default</h2>
+  <p>
+    Logistic regression and LightGBM, both inside a scikit-learn pipeline (median imputation with
+    missing-value flags, scaling, one-hot encoding) and trained with balanced class weights.
+    Balanced weights push probabilities up, so the selected model is recalibrated with a sigmoid
+    fitted on the validation vintage; ranking, and therefore AUC, is unchanged.
+    The deployed model uses only fields known at application time; the full model adds
+    monthly payment, state and three more credit bureau counts.
+  </p>
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Features</th><th>Model</th><th class="num">Valid AUC</th><th class="num">Test AUC</th></tr></thead>
+    <tbody>
+    {% for c in m.pd.candidates %}
+      <tr{% if c.feature_set == 'app' and c.model == m.pd.model %} class="hl"{% endif %}>
+        <td>{{ 'Deployed' if c.feature_set == 'app' else 'Full' }}</td><td>{{ c.model }}</td>
+        <td class="num">{{ c.valid_auc|num }}</td><td class="num">{{ c.test_auc|num }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  <p class="note">
+    Cost of the smaller feature set: {{ m.pd.auc_cost_vs_full|num }} AUC on test.
+    {% if m.pd.grade_only_auc %}Lending Club's sub-grade alone, used as a score, reaches {{ m.pd.grade_only_auc|num }}:
+    most of the signal is already in their pricing.{% endif %}
+    Calibrated test metrics: Brier {{ m.pd.test.brier|num(4) }}, KS {{ m.pd.test.ks|num }}.
+  </p>
+
+  <figure>
+    <img src="/static/figures/roc.svg" alt="ROC curves of the deployed and full PD models on the 2015 test set" width="640" height="420">
+    <figcaption><b>Figure 3.</b> ROC curve on the 2015 test vintage.</figcaption>
+  </figure>
+  <figure>
+    <img src="/static/figures/calibration.svg" alt="Mean predicted PD against observed default rate by PD decile" width="640" height="420">
+    <figcaption>
+      <b>Figure 4.</b> Calibration by PD decile on test. Points above the diagonal are under-predicted.
+      The test year defaulted at {{ m.pd.test.default_rate|pct }} against {{ m.pd.test.mean_pd|pct }} predicted
+      {%- if m.pd.test.default_rate > m.pd.test.mean_pd %}, a shift from the vintages used for calibration{% endif %}.
+    </figcaption>
+  </figure>
+</section>
+
+<section>
+  <h2><span>5</span>Decision threshold</h2>
+  <p>
+    A loan is approved when its expected margin exceeds its expected loss,
+    <code>(1 &minus; PD) &times; m &gt; PD &times; LGD &times; CCF</code>, which gives
+    <code>t* = m / (m + LGD &times; CCF)</code>. With the net margin set to
+    m = {{ m.policy.margin }}, training LGD {{ m.policy.lgd_mean_train|num }} and CCF {{ m.policy.ccf_train|num }},
+    the threshold is PD &lt; {{ m.policy.threshold|pct }}. The margin is a business assumption, not an
+    estimate, so its effect is shown below.
+  </p>
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th class="num">Margin m</th><th class="num">t*</th><th class="num">Approval rate</th><th class="num">Bad rate, approved</th><th class="num">Defaults rejected</th></tr></thead>
+    <tbody>
+    {% for r in m.policy.margin_sensitivity %}
+      <tr{% if r.margin == m.policy.margin %} class="hl"{% endif %}>
+        <td class="num">{{ r.margin|pct(1) }}</td><td class="num">{{ r.threshold|pct }}</td>
+        <td class="num">{{ r.approval_rate|pct }}</td><td class="num">{{ r.bad_rate_approved|pct }}</td>
+        <td class="num">{{ r.recall|pct }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  <p class="note">Test vintage. Defaults rejected is the recall of the reject decision.</p>
+
+  <details>
+    <summary>Fixed thresholds</summary>
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th class="num">Reject if PD &ge;</th><th class="num">Approval rate</th><th class="num">Bad rate, approved</th><th class="num">Defaults rejected</th><th class="num">Precision</th></tr></thead>
+      <tbody>
+      {% for r in m.policy.threshold_table %}
+        <tr><td class="num">{{ r.threshold|pct(0) }}</td><td class="num">{{ r.approval_rate|pct }}</td>
+            <td class="num">{{ r.bad_rate_approved|pct }}</td><td class="num">{{ r.recall|pct }}</td>
+            <td class="num">{{ r.precision|pct }}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    </div>
+  </details>
+</section>
+
+<section>
+  <h2><span>6</span>Loss given default</h2>
+  <p>
+    LGD = 1 &minus; recoveries / EAD at default, for charged-off loans, bounded to [0, 1].
+    EAD at default is the principal still owed; recoveries are cash collected after charge-off.
+    None of the payment columns used to build the target are features.
+  </p>
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Model</th><th class="num">MAE</th><th class="num">RMSE</th><th class="num">R&sup2;</th><th class="num">Mean prediction</th></tr></thead>
+    <tbody>
+    {% for r in m.lgd.test %}
+      <tr{% if r.model == m.lgd.model %} class="hl"{% endif %}>
+        <td>{{ r.model }}</td><td class="num">{{ r.mae|num }}</td><td class="num">{{ r.rmse|num }}</td>
+        <td class="num">{{ r.r2|num }}</td><td class="num">{{ r.mean_pred|num }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  <p class="note">
+    {{ m.lgd.test_loans|int }} defaulted loans in test, observed mean LGD {{ m.lgd.test_mean_observed|num }}.
+    Models are selected on validation RMSE, since expected loss needs the mean LGD.
+    {% if m.lgd.test|map(attribute='r2')|max < 0.02 %}
+    On test, none explains LGD beyond the portfolio mean (best R&sup2; {{ m.lgd.test|map(attribute='r2')|max|num }}):
+    recoveries on these loans are low and barely vary with application data, so predicted LGD stays close to
+    {{ m.policy.lgd_mean_train|pct }} for every loan.
+    {% endif %}
+  </p>
+</section>
+
+<section>
+  <h2><span>7</span>Expected loss</h2>
+  <p>
+    EAD is the funded amount times a credit conversion factor (CCF = {{ m.policy.ccf_train|num }}),
+    the average share of principal still owed when training loans defaulted.
+    The backtest compares it with the loss actually realized on the 2015 loans.
+  </p>
+  <div class="table-wrap">
+  <table class="kv">
+    <tbody>
+      <tr><th>Portfolio, funded</th><td class="num">{{ m.expected_loss.portfolio_funded|money }}</td></tr>
+      <tr><th>Expected loss</th><td class="num">{{ m.expected_loss.expected_loss|money }} &middot; {{ m.expected_loss.expected_loss_pct|pct(2) }}</td></tr>
+      <tr><th>Realized loss</th><td class="num">{{ m.expected_loss.realized_loss|money }} &middot; {{ m.expected_loss.realized_loss_pct|pct(2) }}</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <figure>
+    <img src="/static/figures/el_distribution.svg" alt="Histogram of expected loss per loan as a share of funded amount" width="640" height="420">
+    <figcaption><b>Figure 5.</b> Expected loss per loan, test vintage.</figcaption>
+  </figure>
+  <figure>
+    <img src="/static/figures/backtest.svg" alt="Expected and realized loss by PD decile" width="640" height="420">
+    <figcaption><b>Figure 6.</b> Expected against realized loss by PD decile.</figcaption>
+  </figure>
+</section>
+
+<section id="score">
+  <h2><span>8</span>Score a loan</h2>
+  <p>Sends the fields below to <code>POST /predict</code> and returns PD, LGD, EL and the decision at the threshold above.</p>
+  <form id="score-form" novalidate>
+    <div class="grid">
+      <label>Loan amount (USD)<input name="funded_amnt" type="number" value="12000" min="500" max="40000" step="25" required></label>
+      <label>Interest rate (%)<input name="interest_rate" type="number" value="12.5" min="5" max="31" step="0.01" required></label>
+      <label>Sub-grade
+        <select name="grade">
+          {% for g in m.features.categories.grade %}<option{% if g == 'B4' %} selected{% endif %}>{{ g }}</option>{% endfor %}
+        </select>
+      </label>
+      <label>Loan purpose
+        <select name="loan_purpose">
+          {% for p in m.features.categories.loan_purpose %}<option value="{{ p }}"{% if p == 'debt_consolidation' %} selected{% endif %}>{{ p|replace('_', ' ') }}</option>{% endfor %}
+        </select>
+      </label>
+      <label>Annual income (USD)<input name="annual_income" type="number" value="65000" min="1" step="100" required></label>
+      <label>Debt-to-income (%)<input name="dti" type="number" value="17" min="0" max="60" step="0.01" required></label>
+      <label>Employment length (years)
+        <select name="emp_length_years">
+          <option value="">Unknown</option>
+          {% for n in range(11) %}<option value="{{ n }}"{% if n == 6 %} selected{% endif %}>{{ '< 1' if n == 0 else ('10+' if n == 10 else n) }}</option>{% endfor %}
+        </select>
+      </label>
+      <label>Home ownership
+        <select name="home_ownership">
+          {% for h in m.features.categories.home_ownership_status %}<option{% if h == 'MORTGAGE' %} selected{% endif %}>{{ h }}</option>{% endfor %}
+        </select>
+      </label>
+      <label>Income verification
+        <select name="verification_status">
+          {% for v in m.features.categories.verification_status %}<option{% if v == 'Source Verified' %} selected{% endif %}>{{ v }}</option>{% endfor %}
+        </select>
+      </label>
+      <label>Credit history (years)<input name="credit_history_years" type="number" value="15" min="0" max="80" step="0.1" required></label>
+      <label>Delinquencies, last 2 years<input name="delinq_2yrs" type="number" value="0" min="0" max="50" step="1" required></label>
+      <label>Inquiries, last 6 months<input name="inquiries_6m" type="number" value="0" min="0" max="40" step="1" required></label>
+      <label>Open credit lines<input name="open_credit_lines" type="number" value="11" min="0" max="100" step="1" required></label>
+      <label>Revolving balance (USD)<input name="revolving_balance" type="number" value="11000" min="0" step="1" required></label>
+      <label>Revolving utilization (%)<input name="revolving_utilization" type="number" value="50" min="0" max="200" step="0.1" required></label>
+    </div>
+    <button type="submit">Score loan</button>
+  </form>
+  <div id="result" aria-live="polite"></div>
+</section>
+
+<section>
+  <h2><span>9</span>Limitations</h2>
+  <ul>
+    <li>36-month loans only: 60-month vintages had not run off far enough to be tested out of time.</li>
+    <li>Interest rate and sub-grade are Lending Club's own pricing, so the model partly relearns it.</li>
+    <li>The test year defaulted more than the calibration year; PDs would need periodic recalibration.</li>
+    <li>CCF is a single portfolio average; the margin in the threshold is an assumption.</li>
+  </ul>
+</section>
+</main>
+
+<footer>
+  <p>
+    scikit-learn {{ m.versions['scikit-learn'] }} &middot; LightGBM {{ m.versions.lightgbm }} &middot;
+    <a href="https://github.com/sergioiglesias1/credit-risk-modeling">Source on GitHub</a> &middot;
+    <a href="/docs">API docs</a>
+  </p>
+</footer>
+<script src="/static/score.js" defer></script>
+</body>
+</html>

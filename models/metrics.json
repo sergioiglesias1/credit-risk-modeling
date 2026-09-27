@@ -1,0 +1,425 @@
+{
+  "trained_on": "2026-09-27",
+  "dataset": "Lending Club loans 2007-2015, 36-month term",
+  "splits": [
+    {
+      "split": "train",
+      "loans": 247321,
+      "default_rate": 0.128,
+      "first_issue": 200706,
+      "last_issue": 201406
+    },
+    {
+      "split": "valid",
+      "loans": 90600,
+      "default_rate": 0.1413,
+      "first_issue": 201407,
+      "last_issue": 201412
+    },
+    {
+      "split": "test",
+      "loans": 282789,
+      "default_rate": 0.1492,
+      "first_issue": 201501,
+      "last_issue": 201512
+    }
+  ],
+  "features": {
+    "numeric": [
+      "funded_amnt",
+      "interest_rate",
+      "annual_income",
+      "dept_paym_income_ratio",
+      "emp_length_years",
+      "num_30+_delinq_in_2yrs",
+      "num_inq_in_6mths",
+      "num_open_credit_lines",
+      "total_credit_revolving_bal",
+      "used_credit_share",
+      "credit_history_years"
+    ],
+    "categorical": [
+      "grade",
+      "home_ownership_status",
+      "verification_status",
+      "loan_purpose"
+    ],
+    "categories": {
+      "grade": [
+        "A1",
+        "A2",
+        "A3",
+        "A4",
+        "A5",
+        "B1",
+        "B2",
+        "B3",
+        "B4",
+        "B5",
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "C5",
+        "D1",
+        "D2",
+        "D3",
+        "D4",
+        "D5",
+        "E1",
+        "E2",
+        "E3",
+        "E4",
+        "E5",
+        "F1",
+        "F2",
+        "F3",
+        "F4",
+        "F5",
+        "G1",
+        "G2",
+        "G3",
+        "G4",
+        "G5"
+      ],
+      "home_ownership_status": [
+        "MORTGAGE",
+        "OTHER",
+        "OWN",
+        "RENT"
+      ],
+      "verification_status": [
+        "Not Verified",
+        "Source Verified",
+        "Verified"
+      ],
+      "loan_purpose": [
+        "car",
+        "credit_card",
+        "debt_consolidation",
+        "educational",
+        "home_improvement",
+        "house",
+        "major_purchase",
+        "medical",
+        "moving",
+        "other",
+        "renewable_energy",
+        "small_business",
+        "vacation",
+        "wedding"
+      ]
+    }
+  },
+  "pd": {
+    "model": "LightGBM",
+    "params": {
+      "num_leaves": 15,
+      "n_estimators": 200,
+      "min_child_samples": 200,
+      "learning_rate": 0.1
+    },
+    "calibration": "sigmoid on validation vintage (class_weight='balanced' in training)",
+    "test": {
+      "auc": 0.6858,
+      "gini": 0.3716,
+      "ks": 0.2697,
+      "brier": 0.1203,
+      "mean_pd": 0.1286,
+      "default_rate": 0.1492
+    },
+    "full_model_test": {
+      "auc": 0.6877,
+      "gini": 0.3753,
+      "ks": 0.2722,
+      "brier": 0.1202,
+      "mean_pd": 0.1285,
+      "default_rate": 0.1492
+    },
+    "auc_cost_vs_full": 0.0019,
+    "grade_only_auc": 0.6785,
+    "candidates": [
+      {
+        "feature_set": "full",
+        "model": "Logistic Regression",
+        "valid_auc": 0.6802,
+        "test_auc": 0.6857
+      },
+      {
+        "feature_set": "full",
+        "model": "LightGBM",
+        "valid_auc": 0.6838,
+        "test_auc": 0.6877
+      },
+      {
+        "feature_set": "app",
+        "model": "Logistic Regression",
+        "valid_auc": 0.6787,
+        "test_auc": 0.6853
+      },
+      {
+        "feature_set": "app",
+        "model": "LightGBM",
+        "valid_auc": 0.6828,
+        "test_auc": 0.6858
+      }
+    ],
+    "deciles": [
+      {
+        "decile": 1,
+        "loans": 28279,
+        "mean_pd": 0.0367,
+        "default_rate": 0.0337
+      },
+      {
+        "decile": 2,
+        "loans": 28279,
+        "mean_pd": 0.051,
+        "default_rate": 0.0613
+      },
+      {
+        "decile": 3,
+        "loans": 28279,
+        "mean_pd": 0.0667,
+        "default_rate": 0.0852
+      },
+      {
+        "decile": 4,
+        "loans": 28279,
+        "mean_pd": 0.0827,
+        "default_rate": 0.1016
+      },
+      {
+        "decile": 5,
+        "loans": 28279,
+        "mean_pd": 0.1001,
+        "default_rate": 0.126
+      },
+      {
+        "decile": 6,
+        "loans": 28278,
+        "mean_pd": 0.1204,
+        "default_rate": 0.1463
+      },
+      {
+        "decile": 7,
+        "loans": 28279,
+        "mean_pd": 0.1453,
+        "default_rate": 0.1737
+      },
+      {
+        "decile": 8,
+        "loans": 28279,
+        "mean_pd": 0.1768,
+        "default_rate": 0.205
+      },
+      {
+        "decile": 9,
+        "loans": 28279,
+        "mean_pd": 0.2181,
+        "default_rate": 0.2413
+      },
+      {
+        "decile": 10,
+        "loans": 28279,
+        "mean_pd": 0.2887,
+        "default_rate": 0.3175
+      }
+    ]
+  },
+  "lgd": {
+    "model": "LightGBM",
+    "params": {
+      "num_leaves": 15,
+      "n_estimators": 100,
+      "min_child_samples": 200,
+      "learning_rate": 0.03
+    },
+    "definition": "1 - recoveries / EAD at default, charged-off loans, clipped to [0, 1]",
+    "test_loans": 42002,
+    "test_mean_observed": 0.8724,
+    "test": [
+      {
+        "model": "LightGBM",
+        "mae": 0.0974,
+        "rmse": 0.1515,
+        "r2": -0.0001,
+        "mean_pred": 0.8765
+      },
+      {
+        "model": "Mean baseline",
+        "mae": 0.0968,
+        "rmse": 0.1516,
+        "r2": -0.0013,
+        "mean_pred": 0.8777
+      },
+      {
+        "model": "Linear Regression",
+        "mae": 0.0959,
+        "rmse": 0.1523,
+        "r2": -0.0099,
+        "mean_pred": 0.8842
+      }
+    ]
+  },
+  "policy": {
+    "margin": 0.1,
+    "lgd_mean_train": 0.8777,
+    "ccf_train": 0.5804,
+    "threshold": 0.1641,
+    "at_threshold": {
+      "threshold": 0.1641,
+      "approval_rate": 0.7135,
+      "bad_rate_approved": 0.1054,
+      "recall": 0.4958,
+      "precision": 0.2581
+    },
+    "threshold_table": [
+      {
+        "threshold": 0.05,
+        "approval_rate": 0.1445,
+        "bad_rate_approved": 0.0398,
+        "recall": 0.9614,
+        "precision": 0.1676
+      },
+      {
+        "threshold": 0.1,
+        "approval_rate": 0.4503,
+        "bad_rate_approved": 0.076,
+        "recall": 0.7706,
+        "precision": 0.2091
+      },
+      {
+        "threshold": 0.15,
+        "approval_rate": 0.6674,
+        "bad_rate_approved": 0.0999,
+        "recall": 0.5528,
+        "precision": 0.2479
+      },
+      {
+        "threshold": 0.2,
+        "approval_rate": 0.8113,
+        "bad_rate_approved": 0.1181,
+        "recall": 0.3576,
+        "precision": 0.2827
+      },
+      {
+        "threshold": 0.25,
+        "approval_rate": 0.9095,
+        "bad_rate_approved": 0.1319,
+        "recall": 0.1957,
+        "precision": 0.3224
+      },
+      {
+        "threshold": 0.3,
+        "approval_rate": 0.9679,
+        "bad_rate_approved": 0.1419,
+        "recall": 0.0789,
+        "precision": 0.3668
+      },
+      {
+        "threshold": 0.35,
+        "approval_rate": 0.9937,
+        "bad_rate_approved": 0.1473,
+        "recall": 0.0185,
+        "precision": 0.4375
+      },
+      {
+        "threshold": 0.4,
+        "approval_rate": 0.9995,
+        "bad_rate_approved": 0.149,
+        "recall": 0.0018,
+        "precision": 0.5282
+      }
+    ],
+    "margin_sensitivity": [
+      {
+        "margin": 0.05,
+        "threshold": 0.0894,
+        "approval_rate": 0.3903,
+        "bad_rate_approved": 0.0695,
+        "recall": 0.8182,
+        "precision": 0.2002
+      },
+      {
+        "margin": 0.1,
+        "threshold": 0.1641,
+        "approval_rate": 0.7135,
+        "bad_rate_approved": 0.1054,
+        "recall": 0.4958,
+        "precision": 0.2581
+      },
+      {
+        "margin": 0.155,
+        "threshold": 0.2333,
+        "approval_rate": 0.8814,
+        "bad_rate_approved": 0.1279,
+        "recall": 0.2444,
+        "precision": 0.3074
+      }
+    ]
+  },
+  "expected_loss": {
+    "portfolio_funded": 3620698700.0,
+    "expected_loss": 222656705.02,
+    "expected_loss_pct": 0.0615,
+    "realized_loss": 267360559.18,
+    "realized_loss_pct": 0.0738,
+    "by_decile": [
+      {
+        "decile": 1,
+        "el_pct": 0.0184,
+        "realized_pct": 0.0145
+      },
+      {
+        "decile": 2,
+        "el_pct": 0.0256,
+        "realized_pct": 0.0271
+      },
+      {
+        "decile": 3,
+        "el_pct": 0.0335,
+        "realized_pct": 0.0394
+      },
+      {
+        "decile": 4,
+        "el_pct": 0.0417,
+        "realized_pct": 0.0491
+      },
+      {
+        "decile": 5,
+        "el_pct": 0.0505,
+        "realized_pct": 0.0631
+      },
+      {
+        "decile": 6,
+        "el_pct": 0.0609,
+        "realized_pct": 0.0754
+      },
+      {
+        "decile": 7,
+        "el_pct": 0.0736,
+        "realized_pct": 0.0919
+      },
+      {
+        "decile": 8,
+        "el_pct": 0.0897,
+        "realized_pct": 0.1112
+      },
+      {
+        "decile": 9,
+        "el_pct": 0.111,
+        "realized_pct": 0.1315
+      },
+      {
+        "decile": 10,
+        "el_pct": 0.1473,
+        "realized_pct": 0.1838
+      }
+    ]
+  },
+  "versions": {
+    "scikit-learn": "1.9.0",
+    "lightgbm": "4.6.0"
+  }
+}

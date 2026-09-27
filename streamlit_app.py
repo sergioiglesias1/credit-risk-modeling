@@ -34,7 +34,7 @@ st.markdown("""
 CLASS_IMBALANCE = pd.DataFrame({
     "Class": ["No Default", "Default"],
     "Count": [1859927, 279716],
-    "Pct": ["84.96", "15.04%"]
+    "Pct": ["84.96%", "15.04%"]
 })
 
 PD_BASE = pd.DataFrame([
@@ -197,9 +197,9 @@ with tab1:
         x = np.arange(len(stats_order))
         w = 0.35
         nd = [int_data["No Default"][s] for s in stats_order]
-        df = [int_data["Default"][s]    for s in stats_order]
+        dflt = [int_data["Default"][s]  for s in stats_order]
         ax2.bar(x - w/2, nd, w, color=CYAN,  label="No Default", alpha=0.85)
-        ax2.bar(x + w/2, df, w, color=RED,   label="Default",    alpha=0.85)
+        ax2.bar(x + w/2, dflt, w, color=RED, label="Default",    alpha=0.85)
         ax2.set_xticks(x)
         ax2.set_xticklabels(stats_order, color=MUTED, fontsize=9)
         ax2.set_ylabel("Interest Rate (%)", color=MUTED)
@@ -222,7 +222,7 @@ with tab2:
     )
 
     st.markdown("---")
-    st.markdown("#### After GridSearchCV Tuning")
+    st.markdown("#### After RandomizedSearchCV Tuning")
     st.dataframe(
         PD_TUNED.style
             .highlight_max(subset=["CV_AUC"], color="#00ffa333")
